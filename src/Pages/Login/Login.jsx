@@ -7,7 +7,9 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
-    const [isAdmin, setIsAdmin] = useState(false);
+    // isAdmin state-i istifadə olunmursa silinə bilər, 
+    // lakin gələcəkdə istifadə edəcəksənsə saxlayaq.
+    const [isAdmin, setIsAdmin] = useState(false); 
 
     const navigate = useNavigate();
 
@@ -22,20 +24,17 @@ const Login = () => {
                 password,
             });
 
-            console.log('API yanıtı:', response.data);
-
-            // API yanıtından userType alınır
             const { userType } = response.data;
 
             if (userType === 'admin') {
                 setIsAdmin(true);
                 setSuccess(true);
-               <a href={navigate  ('/post')}></a> // Admin paneline yönlendir
+                // XƏTA BURADA İDİ: <a> teqi silindi, birbaşa navigate çağırıldı
+                navigate('/post'); 
             } else {
                 setError('Sadece admin kullanıcılar bu işlemi yapabilir.');
             }
         } catch (err) {
-            console.log('Hata:', err);
             setError('Giriş başarısız: ' + (err.response?.data?.message || 'Bir hata oluştu'));
         }
     };
