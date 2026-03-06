@@ -65,7 +65,7 @@ const submitHandler = async (e) => {
 
     try {
 
-        await axios.post(`https://grez-shop-lf6t.vercel.app/api/${category}`, {
+        await axios.post(`https://grez-shop-lf6t.vercel.app/api/${category}/postatt`, {
 
             title,
             price,
