@@ -87,7 +87,7 @@ useEffect(() => {
 
             setSuccess(true);
             setFormData({ title: '', price: '' });
-            setPhoto(null); // Fotoğrafı temizle
+            setPhoto(null); 
             fetchItems(url, setItems); // Öğeleri yeniden yükle
 
             setTimeout(() => {
