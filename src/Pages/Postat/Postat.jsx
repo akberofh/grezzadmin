@@ -43,21 +43,16 @@ useEffect(() => {
     fetchItems();
 }, []);
 
-const handleImage = (e) => {
-
+  const handleImage = (e) => {
     const file = e.target.files[0];
+    if (!file) return;
 
     const reader = new FileReader();
-
     reader.onloadend = () => {
-
-        setPhoto(reader.result.split(",")[1]);
-
+      setPhoto(reader.result.split(",")[1]); // base64 string
     };
-
     reader.readAsDataURL(file);
-
-};
+  };
 
 const submitHandler = async (e) => {
 
