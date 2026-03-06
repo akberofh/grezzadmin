@@ -14,7 +14,7 @@ const [items, setItems] = useState({
 
 const [title, setTitle] = useState("");
 const [price, setPrice] = useState("");
-const [image, setImage] = useState("");
+const [photo, setPhoto] = useState("");
 const [category, setCategory] = useState("pubg");
 
 const fetchItems = async () => {
@@ -51,7 +51,7 @@ const handleImage = (e) => {
 
     reader.onloadend = () => {
 
-        setImage(reader.result.split(",")[1]);
+        setPhoto(reader.result.split(",")[1]);
 
     };
 
@@ -77,7 +77,7 @@ const submitHandler = async (e) => {
 
         setTitle("");
         setPrice("");
-        setImage("");
+        setPhoto("");
 
         fetchItems();
 
