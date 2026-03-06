@@ -9,7 +9,7 @@ const Login = () => {
     const [success, setSuccess] = useState(false);
     // isAdmin state-i istifadə olunmursa silinə bilər, 
     // lakin gələcəkdə istifadə edəcəksənsə saxlayaq.
-    const [isAdmin, setIsAdmin] = useState(false); 
+    const [ setIsAdmin] = useState(false); 
 
     const navigate = useNavigate();
 
