@@ -45,40 +45,41 @@ function Postat() {
   };
 
   // Yeni post əlavə etmək
-  const submitHandler = async (e) => {
-    e.preventDefault();
+ const submitHandler = async (e) => {
+  e.preventDefault();
 
-    if (!title || !price || !photo) {
-      toast.error("Bütün sahələri doldurun!");
-      return;
+  if (!title || !price) {
+    toast.error("Title və price doldurulmalıdır!");
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("price", price);
+
+    // Əgər şəkil varsa göndər
+    if (photo) {
+      formData.append("photo", photo);
     }
 
-    try {
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("price", price);
-      formData.append("photo", photo); // Fayl obyekti Multer-ə uyğun
-      // Əgər backend-də digər sahələr var, onları da əlavə edə bilərsən
-      // formData.append("description", description);
+    await axios.post(
+      `https://grez-shop-lf6t.vercel.app/api/${category}/postt`,
+      formData
+    );
 
-      await axios.post(
-        `https://grez-shop-lf6t.vercel.app/api/${category}/postt`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+    toast.success("Product əlavə edildi");
 
-      toast.success("Product əlavə edildi");
+    setTitle("");
+    setPrice("");
+    setPhoto(null);
 
-      setTitle("");
-      setPrice("");
-      setPhoto(null);
-
-      fetchItems();
-    } catch (error) {
-      toast.error("Əlavə edilə bilmədi");
-      console.error(error);
-    }
-  };
+    fetchItems();
+  } catch (error) {
+    toast.error("Əlavə edilə bilmədi");
+    console.error(error);
+  }
+};
 
   const deleteItem = async (id, type) => {
     try {
@@ -129,7 +130,9 @@ function Postat() {
         <h2>PUBG</h2>
         {items.pubg.map((item) => (
           <div key={item._id} className={styles.card}>
-            <img src={`data:image/jpeg;base64,${item.photo}`} alt={item.title} />
+           {item.photo && (
+  <img src={`data:image/jpeg;base64,${item.photo}`} alt={item.title} />
+)}
             <h3>{item.title}</h3>
             <p>{item.price} ₼</p>
             <button onClick={() => deleteItem(item._id, "pubg")}>
@@ -141,7 +144,9 @@ function Postat() {
         <h2>Fann</h2>
         {items.fann.map((item) => (
           <div key={item._id} className={styles.card}>
-            <img src={`data:image/jpeg;base64,${item.photo}`} alt={item.title} />
+           {item.photo && (
+  <img src={`data:image/jpeg;base64,${item.photo}`} alt={item.title} />
+)}
             <h3>{item.title}</h3>
             <p>{item.price} ₼</p>
             <button onClick={() => deleteItem(item._id, "fann")}>
@@ -153,7 +158,9 @@ function Postat() {
         <h2>Tiktok</h2>
         {items.tiktok.map((item) => (
           <div key={item._id} className={styles.card}>
-            <img src={`data:image/jpeg;base64,${item.photo}`} alt={item.title} />
+            {item.photo && (
+  <img src={`data:image/jpeg;base64,${item.photo}`} alt={item.title} />
+)}
             <h3>{item.title}</h3>
             <p>{item.price} ₼</p>
             <button onClick={() => deleteItem(item._id, "tiktok")}>
