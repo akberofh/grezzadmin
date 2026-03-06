@@ -5,210 +5,165 @@ import { toast } from "react-toastify";
 import { FaTrash } from "react-icons/fa";
 
 function Postat() {
-
-const [items, setItems] = useState({
+  const [items, setItems] = useState({
     pubg: [],
     fann: [],
     tiktok: []
-});
+  });
 
-const [title, setTitle] = useState("");
-const [price, setPrice] = useState("");
-const [photo, setPhoto] = useState("");
-const [category, setCategory] = useState("pubg");
+  const [title, setTitle] = useState("");
+  const [price, setPrice] = useState("");
+  const [photo, setPhoto] = useState(null); // Fayl obyektini saxlayırıq
+  const [category, setCategory] = useState("pubg");
 
-const fetchItems = async () => {
-
+  // Backend-dən itemləri çəkmək
+  const fetchItems = async () => {
     try {
+      const pubg = await axios.get("https://grez-shop-lf6t.vercel.app/api/pubg/");
+      const fann = await axios.get("https://grez-shop-lf6t.vercel.app/api/fann/");
+      const tiktok = await axios.get("https://grez-shop-lf6t.vercel.app/api/tiktok/");
 
-        const pubg = await axios.get("https://grez-shop-lf6t.vercel.app/api/pubg/");
-        const fann = await axios.get("https://grez-shop-lf6t.vercel.app/api/fann/");
-        const tiktok = await axios.get("https://grez-shop-lf6t.vercel.app/api/tiktok/");
-
-        setItems({
-            pubg: pubg.data.allPubges,
-            fann: fann.data.allFanns,
-            tiktok: tiktok.data.allTiktokes
-        });
-
+      setItems({
+        pubg: pubg.data.allPubges,
+        fann: fann.data.allFanns,
+        tiktok: tiktok.data.allTiktokes
+      });
     } catch (error) {
-
-        toast.error("Data alınmadı");
-
+      toast.error("Data alınmadı");
     }
+  };
 
-};
-
-useEffect(() => {
+  useEffect(() => {
     fetchItems();
-}, []);
+  }, []);
 
+  // Fayl seçimi
   const handleImage = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPhoto(reader.result.split(",")[1]); // base64 string
-    };
-    reader.readAsDataURL(file);
+    setPhoto(file); // Faylı birbaşa state-ə qoyuruq
   };
 
-const submitHandler = async (e) => {
-
+  // Yeni post əlavə etmək
+  const submitHandler = async (e) => {
     e.preventDefault();
 
-    try {
-
-        await axios.post(`https://grez-shop-lf6t.vercel.app/api/${category}/postt`, {
-
-            title,
-            price,
-            photo
-
-        });
-
-        toast.success("Product əlavə edildi");
-
-        setTitle("");
-        setPrice("");
-        setPhoto("");
-
-        fetchItems();
-
-    } catch (error) {
-
-        toast.error("Əlavə edilə bilmədi");
-
+    if (!title || !price || !photo) {
+      toast.error("Bütün sahələri doldurun!");
+      return;
     }
 
-};
-
-const deleteItem = async (id, type) => {
-
     try {
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("price", price);
+      formData.append("photo", photo); // Fayl obyekti Multer-ə uyğun
+      // Əgər backend-də digər sahələr var, onları da əlavə edə bilərsən
+      // formData.append("description", description);
 
-        await axios.delete(`https://grez-shop-lf6t.vercel.app/api/${type}/${id}`);
+      await axios.post(
+        `https://grez-shop-lf6t.vercel.app/api/${category}/postt`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
 
-        toast.success("Silindi");
+      toast.success("Product əlavə edildi");
 
-        fetchItems();
+      setTitle("");
+      setPrice("");
+      setPhoto(null);
 
+      fetchItems();
     } catch (error) {
-
-        toast.error("Silinmədi");
-
+      toast.error("Əlavə edilə bilmədi");
+      console.error(error);
     }
+  };
 
-};
+  const deleteItem = async (id, type) => {
+    try {
+      await axios.delete(`https://grez-shop-lf6t.vercel.app/api/${type}/${id}`);
+      toast.success("Silindi");
+      fetchItems();
+    } catch (error) {
+      toast.error("Silinmədi");
+    }
+  };
 
-return (
+  return (
+    <div className={styles.container}>
+      <h1>Admin Panel</h1>
 
-<div className={styles.container}>
+      <form onSubmit={submitHandler} className={styles.form}>
+        <input
+          placeholder="Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+        />
 
-<h1>Admin Panel</h1>
+        <input
+          placeholder="Price"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          required
+        />
 
-<form onSubmit={submitHandler} className={styles.form}>
+        <input
+          type="file"
+          onChange={handleImage}
+          accept="image/*"
+          required
+        />
 
-<input
-placeholder="Title"
-value={title}
-onChange={(e)=>setTitle(e.target.value)}
-required
-/>
+        <select value={category} onChange={(e) => setCategory(e.target.value)}>
+          <option value="pubg">PUBG</option>
+          <option value="fann">Fann</option>
+          <option value="tiktok">Tiktok</option>
+        </select>
 
-<input
-placeholder="Price"
-value={price}
-onChange={(e)=>setPrice(e.target.value)}
-required
-/>
+        <button type="submit">Add Product</button>
+      </form>
 
-<input
-type="file"
-onChange={handleImage}
-required
-/>
+      <div className={styles.products}>
+        <h2>PUBG</h2>
+        {items.pubg.map((item) => (
+          <div key={item._id} className={styles.card}>
+            <img src={`data:image/jpeg;base64,${item.photo}`} alt={item.title} />
+            <h3>{item.title}</h3>
+            <p>{item.price} ₼</p>
+            <button onClick={() => deleteItem(item._id, "pubg")}>
+              <FaTrash />
+            </button>
+          </div>
+        ))}
 
-<select
-value={category}
-onChange={(e)=>setCategory(e.target.value)}
->
+        <h2>Fann</h2>
+        {items.fann.map((item) => (
+          <div key={item._id} className={styles.card}>
+            <img src={`data:image/jpeg;base64,${item.photo}`} alt={item.title} />
+            <h3>{item.title}</h3>
+            <p>{item.price} ₼</p>
+            <button onClick={() => deleteItem(item._id, "fann")}>
+              <FaTrash />
+            </button>
+          </div>
+        ))}
 
-<option value="pubg">PUBG</option>
-<option value="fann">Fann</option>
-<option value="tiktok">Tiktok</option>
-
-</select>
-
-<button type="submit">
-Add Product
-</button>
-
-</form>
-
-<div className={styles.products}>
-
-<h2>PUBG</h2>
-
-{items.pubg.map((item)=>(
-<div key={item._id} className={styles.card}>
-
-<img src={`data:image/jpeg;base64,${item.photo}`} alt={item.title} />
-
-<h3>{item.title}</h3>
-
-<p>{item.price} ₼</p>
-
-<button onClick={()=>deleteItem(item._id,"pubg")}>
-<FaTrash/>
-</button>
-
-</div>
-))}
-
-<h2>Fann</h2>
-
-{items.fann.map((item)=>(
-<div key={item._id} className={styles.card}>
-
-<img src={`data:image/jpeg;base64,${item.photo}`} alt={item.title} />
-
-<h3>{item.title}</h3>
-
-<p>{item.price} ₼</p>
-
-<button onClick={()=>deleteItem(item._id,"fann")}>
-<FaTrash/>
-</button>
-
-</div>
-))}
-
-<h2>Tiktok</h2>
-
-{items.tiktok.map((item)=>(
-<div key={item._id} className={styles.card}>
-
-<img src={`data:image/jpeg;base64,${item.photo}`} alt={item.title} />
-
-<h3>{item.title}</h3>
-
-<p>{item.price} ₼</p>
-
-<button onClick={()=>deleteItem(item._id,"tiktok")}>
-<FaTrash/>
-</button>
-
-</div>
-))}
-
-</div>
-
-</div>
-
-);
-
+        <h2>Tiktok</h2>
+        {items.tiktok.map((item) => (
+          <div key={item._id} className={styles.card}>
+            <img src={`data:image/jpeg;base64,${item.photo}`} alt={item.title} />
+            <h3>{item.title}</h3>
+            <p>{item.price} ₼</p>
+            <button onClick={() => deleteItem(item._id, "tiktok")}>
+              <FaTrash />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export default Postat;
