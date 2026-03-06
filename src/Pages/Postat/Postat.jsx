@@ -18,11 +18,12 @@ const Postat = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
 
-    useEffect(() => {
-        fetchItems('https://grez-shop-lf6t.vercel.app/api/pubg/', setItems1, 'pubg');
-        fetchItems('https://grez-shop-lf6t.vercel.app/api/fann/', setItems2, 'fann');
-        fetchItems('https://grez-shop-lf6t.vercel.app/api/tiktok/', setItems3, 'tiktok');
-    }, []);
+ // eslint-disable-next-line react-hooks/exhaustive-deps
+useEffect(() => {
+    fetchItems('https://grez-shop-lf6t.vercel.app/api/pubg/', setItems1, 'pubg');
+    fetchItems('https://grez-shop-lf6t.vercel.app/api/fann/', setItems2, 'fann');
+    fetchItems('https://grez-shop-lf6t.vercel.app/api/tiktok/', setItems3, 'tiktok');
+}, []);
 
     const fetchItems = async (url, setItems, type) => {
         try {
@@ -78,7 +79,7 @@ const Postat = () => {
         }
 
         try {
-            const response = await axios.post(url, data, {
+            await axios.post(url, data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
