@@ -113,7 +113,7 @@ function Postat() {
           type="file"
           onChange={handleImage}
           accept="image/*"
-          required
+          
         />
 
         <select value={category} onChange={(e) => setCategory(e.target.value)}>
