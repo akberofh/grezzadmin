@@ -159,7 +159,7 @@ Add Product
 {items.pubg.map((item)=>(
 <div key={item._id} className={styles.card}>
 
-<img src={`data:image/jpeg;base64,${item.image}`} />
+<img src={`data:image/jpeg;base64,${item.image}`} alt={item.title} />
 
 <h3>{item.title}</h3>
 
@@ -177,7 +177,7 @@ Add Product
 {items.fann.map((item)=>(
 <div key={item._id} className={styles.card}>
 
-<img src={`data:image/jpeg;base64,${item.image}`} />
+<img src={`data:image/jpeg;base64,${item.image}`} alt={item.title} />
 
 <h3>{item.title}</h3>
 
@@ -195,7 +195,7 @@ Add Product
 {items.tiktok.map((item)=>(
 <div key={item._id} className={styles.card}>
 
-<img src={`data:image/jpeg;base64,${item.image}`} />
+<img src={`data:image/jpeg;base64,${item.image}`} alt={item.title} />
 
 <h3>{item.title}</h3>
 
