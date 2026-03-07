@@ -131,22 +131,36 @@ setDeletingId(null);
 
 
 
-const filterAndSort = (arr)=>{
+const filterAndSort = (arr) => {
 
 let data = [...arr];
 
-if(search){
+/* SEARCH */
+if (search.trim() !== "") {
 data = data.filter(item =>
 item.title.toLowerCase().includes(search.toLowerCase())
 );
 }
 
-if(sort === "price"){
-data.sort((a,b)=>Number(a.price) - Number(b.price));
+/* STRING → NUMBER CONVERT */
+data = data.map(item => ({
+...item,
+priceNumber: Number(item.price)
+}));
+
+/* SORT */
+if (sort === "price") {
+
+data.sort((a,b) => a.priceNumber - b.priceNumber);
+
 }
 
-if(sort === "new"){
-data.reverse();
+/* NEW PRODUCTS FIRST */
+
+if (sort === "new") {
+
+data.sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
 }
 
 return data;
