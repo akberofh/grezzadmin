@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-// SVG İkon Bileşenleri (Kütüphane bağımlılığını kaldırmak için)
+// SVG Ikon Bileşenleri (Kütüphane hatasını önlemek için)
 const TrashIcon = () => (
   <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 448 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M432 32H312l-9.4-18.7A24 24 0 0 0 281.1 0H166.8a23.72 23.72 0 0 0-21.4 13.3L136 32H16A16 16 0 0 0 0 48v32a16 16 0 0 0 16 16h416a16 16 0 0 0 16-16V48a16 16 0 0 0-16-16zM53.2 467a48 48 0 0 0 47.9 45h245.8a48 48 0 0 0 47.9-45L416 128H32z"></path></svg>
 );
@@ -30,7 +30,7 @@ function Postat() {
 
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
-  const [photo, setPhoto] = useState(null);
+  const [photo, setPhoto] = useState(null); // Dosya objesini tutacak
   const [category, setCategory] = useState("pubg");
 
   const fetchItems = async () => {
@@ -56,22 +56,6 @@ function Postat() {
     fetchItems();
   }, []);
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 4 * 1024 * 1024) {
-        toast.error("Şəkil çox böyükdür (Max 4MB)");
-        e.target.value = null;
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhoto(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const submitHandler = async (e) => {
     e.preventDefault();
 
@@ -82,15 +66,19 @@ function Postat() {
 
     try {
       setLoading(true);
-      const payload = {
-        title,
-        price,
-        photo,
-      };
+
+      // --- FOTO GÖNDERİLME KISMI ESKİ HALİ (FormData) ---
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("price", price);
+      
+      if (photo) {
+        formData.append("photo", photo);
+      }
 
       await axios.post(
         `https://grez-shop-lf6t.vercel.app/api/${category}/postt`,
-        payload
+        formData
       );
 
       toast.success("Məhsul əlavə edildi");
@@ -99,7 +87,7 @@ function Postat() {
       setPhoto(null);
       fetchItems();
     } catch (err) {
-      toast.error(err.response?.status === 413 ? "Şəkil ölçüsü çox böyükdür!" : "Əlavə edilə bilmədi");
+      toast.error("Əlavə edilə bilmədi");
     } finally {
       setLoading(false);
     }
@@ -128,6 +116,7 @@ function Postat() {
       );
     }
 
+    // Sıralama (Sort) - PRICE DÜZELTİLDİ
     if (sort === "price") {
       data.sort((a, b) => {
         const valA = parseFloat(String(a.price).replace(/[^0-9.]/g, "")) || 0;
@@ -200,7 +189,7 @@ function Postat() {
             <input
               type="file"
               accept="image/*"
-              onChange={handleImageChange}
+              onChange={(e) => setPhoto(e.target.files[0])}
               className="border border-gray-200 p-2 rounded-xl text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
             />
             <select
@@ -224,7 +213,7 @@ function Postat() {
 
         <div className="flex flex-wrap gap-4 mb-10 items-center bg-white p-4 rounded-2xl shadow-sm">
           <div className="relative flex-1 min-w-[250px] flex items-center">
-            <div className="absolute left-3">
+            <div className="absolute left-3 text-gray-400">
               <SearchIcon />
             </div>
             <input
@@ -245,6 +234,7 @@ function Postat() {
         </div>
 
         <section className="space-y-12">
+          {/* PUBG Kategorisi */}
           <div>
             <div className="flex items-center justify-between border-b pb-2 mb-6">
               <h2 className="text-2xl font-bold text-gray-700">PUBG Mobile</h2>
@@ -255,6 +245,7 @@ function Postat() {
             {items.pubg.length > 0 ? renderProducts(items.pubg, "pubg") : <p className="text-gray-400 italic">Məlumat yoxdur.</p>}
           </div>
 
+          {/* FANN Kategorisi */}
           <div>
             <div className="flex items-center justify-between border-b pb-2 mb-6">
               <h2 className="text-2xl font-bold text-gray-700">FANN Aksesuar</h2>
@@ -265,6 +256,7 @@ function Postat() {
             {items.fann.length > 0 ? renderProducts(items.fann, "fann") : <p className="text-gray-400 italic">Məlumat yoxdur.</p>}
           </div>
 
+          {/* Tiktok Kategorisi */}
           <div>
             <div className="flex items-center justify-between border-b pb-2 mb-6">
               <h2 className="text-2xl font-bold text-gray-700">Tiktok Hesabları</h2>
