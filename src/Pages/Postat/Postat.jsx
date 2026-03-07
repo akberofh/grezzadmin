@@ -1,176 +1,332 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import styles from "./Postat.module.css";
 import { toast } from "react-toastify";
 import { FaTrash } from "react-icons/fa";
 
 function Postat() {
-  const [items, setItems] = useState({
-    pubg: [],
-    fann: [],
-    tiktok: []
-  });
 
-  const [title, setTitle] = useState("");
-  const [price, setPrice] = useState("");
-  const [photo, setPhoto] = useState(null); // Fayl obyektini saxlayırıq
-  const [category, setCategory] = useState("pubg");
+const [items,setItems] = useState({
+pubg:[],
+fann:[],
+tiktok:[]
+});
 
-  // Backend-dən itemləri çəkmək
-  const fetchItems = async () => {
-    try {
-      const pubg = await axios.get("https://grez-shop-lf6t.vercel.app/api/pubg/");
-      const fann = await axios.get("https://grez-shop-lf6t.vercel.app/api/fann/");
-      const tiktok = await axios.get("https://grez-shop-lf6t.vercel.app/api/tiktok/");
+const [loading,setLoading] = useState(false);
 
-      setItems({
-        pubg: pubg.data.allPubges,
-        fann: fann.data.allFanns,
-        tiktok: tiktok.data.allTiktokes
-      });
-    } catch (error) {
-      toast.error("Data alınmadı");
-    }
-  };
+const [search,setSearch] = useState("");
+const [sort,setSort] = useState("new");
 
-  useEffect(() => {
-    fetchItems();
-  }, []);
+const [title,setTitle] = useState("");
+const [price,setPrice] = useState("");
+const [photo,setPhoto] = useState(null);
+const [category,setCategory] = useState("pubg");
 
-  // Fayl seçimi
-  const handleImage = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setPhoto(file); // Faylı birbaşa state-ə qoyuruq
-  };
 
-  // Yeni post əlavə etmək
- const submitHandler = async (e) => {
-  e.preventDefault();
 
-  if (!title || !price) {
-    toast.error("Title və price doldurulmalıdır!");
-    return;
-  }
+const fetchItems = async ()=>{
 
-  try {
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("price", price);
+try{
 
-    // Əgər şəkil varsa göndər
-    if (photo) {
-      formData.append("photo", photo);
-    }
+setLoading(true);
 
-    await axios.post(
-      `https://grez-shop-lf6t.vercel.app/api/${category}/postt`,
-      formData
-    );
+const pubg = await axios.get("https://grez-shop-lf6t.vercel.app/api/pubg/");
+const fann = await axios.get("https://grez-shop-lf6t.vercel.app/api/fann/");
+const tiktok = await axios.get("https://grez-shop-lf6t.vercel.app/api/tiktok/");
 
-    toast.success("Product əlavə edildi");
+setItems({
+pubg:pubg.data.allPubges || [],
+fann:fann.data.allFanns || [],
+tiktok:tiktok.data.allTiktokes || []
+});
 
-    setTitle("");
-    setPrice("");
-    setPhoto(null);
+}
+catch{
+toast.error("Məhsullar yüklənmədi");
+}
+finally{
+setLoading(false);
+}
 
-    fetchItems();
-  } catch (error) {
-    toast.error("Əlavə edilə bilmədi");
-    console.error(error);
-  }
 };
 
-  const deleteItem = async (id, type) => {
-    try {
-      await axios.delete(`https://grez-shop-lf6t.vercel.app/api/${type}/${id}`);
-      toast.success("Silindi");
-      fetchItems();
-    } catch (error) {
-      toast.error("Silinmədi");
-    }
-  };
 
-  return (
-    <div className={styles.container}>
-      <h1>Admin Panel</h1>
 
-      <form onSubmit={submitHandler} className={styles.form}>
-        <input
-          placeholder="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
+useEffect(()=>{
+fetchItems();
+},[]);
 
-        <input
-          placeholder="Price"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          required
-        />
 
-        <input
-          type="file"
-          onChange={handleImage}
-          accept="image/*"
-          
-        />
 
-        <select value={category} onChange={(e) => setCategory(e.target.value)}>
-          <option value="pubg">PUBG</option>
-          <option value="fann">Fann</option>
-          <option value="tiktok">Tiktok</option>
-        </select>
+const submitHandler = async (e)=>{
 
-        <button type="submit">Add Product</button>
-      </form>
+e.preventDefault();
 
-      <div className={styles.products}>
-        <h2>PUBG</h2>
-        {items.pubg.map((item) => (
-          <div key={item._id} className={styles.card}>
-           {item.photo && (
-  <img src={`data:image/jpeg;base64,${item.photo}`} alt={item.title} />
+if(!title || !price){
+toast.error("Title və price boş ola bilməz");
+return;
+}
+
+try{
+
+setLoading(true);
+
+const formData = new FormData();
+
+formData.append("title",title);
+formData.append("price",price);
+
+if(photo){
+formData.append("photo",photo);
+}
+
+await axios.post(
+`https://grez-shop-lf6t.vercel.app/api/${category}/postt`,
+formData
+);
+
+toast.success("Product əlavə edildi");
+
+setTitle("");
+setPrice("");
+setPhoto(null);
+
+fetchItems();
+
+}
+catch{
+toast.error("Əlavə edilə bilmədi");
+}
+finally{
+setLoading(false);
+}
+
+};
+
+
+
+const deleteItem = async (id,type)=>{
+
+try{
+
+setLoading(true);
+
+await axios.delete(
+`https://grez-shop-lf6t.vercel.app/api/${type}/${id}`
+);
+
+toast.success("Silindi");
+
+fetchItems();
+
+}
+catch{
+toast.error("Silinmədi");
+}
+finally{
+setLoading(false);
+}
+
+};
+
+
+
+const filterAndSort = (arr)=>{
+
+let data = [...arr];
+
+if(search){
+data = data.filter(item =>
+item.title.toLowerCase().includes(search.toLowerCase())
+);
+}
+
+if(sort === "price"){
+data.sort((a,b)=>a.price - b.price);
+}
+
+if(sort === "new"){
+data.reverse();
+}
+
+return data;
+
+};
+
+
+
+const renderProducts = (data,type)=>(
+<div className="grid md:grid-cols-4 sm:grid-cols-2 grid-cols-1 gap-5">
+
+{filterAndSort(data).map(item=>(
+<div
+key={item._id}
+className="bg-white shadow-md rounded-xl overflow-hidden hover:shadow-xl transition p-3"
+>
+
+{item.photo && (
+<img
+src={`data:image/jpeg;base64,${item.photo}`}
+alt={item.title}
+className="h-40 w-full object-cover rounded"
+/>
 )}
-            <h3>{item.title}</h3>
-            <p>{item.price} ₼</p>
-            <button onClick={() => deleteItem(item._id, "pubg")}>
-              <FaTrash />
-            </button>
-          </div>
-        ))}
 
-        <h2>Fann</h2>
-        {items.fann.map((item) => (
-          <div key={item._id} className={styles.card}>
-           {item.photo && (
-  <img src={`data:image/jpeg;base64,${item.photo}`} alt={item.title} />
-)}
-            <h3>{item.title}</h3>
-            <p>{item.price} ₼</p>
-            <button onClick={() => deleteItem(item._id, "fann")}>
-              <FaTrash />
-            </button>
-          </div>
-        ))}
+<div className="mt-3">
 
-        <h2>Tiktok</h2>
-        {items.tiktok.map((item) => (
-          <div key={item._id} className={styles.card}>
-            {item.photo && (
-  <img src={`data:image/jpeg;base64,${item.photo}`} alt={item.title} />
+<h3 className="font-semibold text-lg">
+{item.title}
+</h3>
+
+<p className="text-green-600 font-bold">
+{item.price} ₼
+</p>
+
+<button
+onClick={()=>deleteItem(item._id,type)}
+className="mt-3 w-full bg-red-500 text-white py-2 rounded hover:bg-red-600 flex justify-center items-center gap-2"
+>
+
+<FaTrash/>
+
+Sil
+
+</button>
+
+</div>
+
+</div>
+))}
+
+</div>
+);
+
+
+
+return(
+
+<div className="min-h-screen bg-gray-100 p-6">
+
+<div className="max-w-7xl mx-auto">
+
+<h1 className="text-3xl font-bold mb-6">
+Admin Panel
+</h1>
+
+
+
+{loading && (
+<div className="bg-blue-100 text-blue-700 p-3 rounded mb-4">
+Yüklənir...
+</div>
 )}
-            <h3>{item.title}</h3>
-            <p>{item.price} ₼</p>
-            <button onClick={() => deleteItem(item._id, "tiktok")}>
-              <FaTrash />
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+
+
+
+<form
+onSubmit={submitHandler}
+className="bg-white p-5 rounded shadow mb-6 grid md:grid-cols-5 gap-3"
+>
+
+<input
+placeholder="Title"
+value={title}
+onChange={(e)=>setTitle(e.target.value)}
+className="border p-2 rounded"
+/>
+
+<input
+placeholder="Price"
+value={price}
+onChange={(e)=>setPrice(e.target.value)}
+className="border p-2 rounded"
+/>
+
+<input
+type="file"
+accept="image/*"
+onChange={(e)=>setPhoto(e.target.files[0])}
+className="border p-2 rounded"
+/>
+
+<select
+value={category}
+onChange={(e)=>setCategory(e.target.value)}
+className="border p-2 rounded"
+>
+
+<option value="pubg">PUBG</option>
+<option value="fann">Fann</option>
+<option value="tiktok">Tiktok</option>
+
+</select>
+
+<button
+type="submit"
+className="bg-blue-600 text-white rounded hover:bg-blue-700"
+>
+
+{loading ? "Yüklənir..." : "Add"}
+
+</button>
+
+</form>
+
+
+
+<div className="flex gap-4 mb-6">
+
+<input
+placeholder="Title ilə axtar"
+value={search}
+onChange={(e)=>setSearch(e.target.value)}
+className="border p-2 rounded w-60"
+/>
+
+<select
+value={sort}
+onChange={(e)=>setSort(e.target.value)}
+className="border p-2 rounded"
+>
+
+<option value="new">Yeni əlavə edilənlər</option>
+<option value="price">Qiymət artan</option>
+
+</select>
+
+</div>
+
+
+
+<h2 className="text-xl font-bold mb-3">
+PUBG
+</h2>
+
+{renderProducts(items.pubg,"pubg")}
+
+
+
+<h2 className="text-xl font-bold mt-10 mb-3">
+FANN
+</h2>
+
+{renderProducts(items.fann,"fann")}
+
+
+
+<h2 className="text-xl font-bold mt-10 mb-3">
+TIKTOK
+</h2>
+
+{renderProducts(items.tiktok,"tiktok")}
+
+
+
+</div>
+
+</div>
+
+);
+
 }
 
 export default Postat;
