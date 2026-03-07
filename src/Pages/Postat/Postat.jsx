@@ -12,6 +12,7 @@ tiktok:[]
 });
 
 const [loading,setLoading] = useState(false);
+const [deletingId,setDeletingId] = useState(null);
 
 const [search,setSearch] = useState("");
 const [sort,setSort] = useState("new");
@@ -108,7 +109,7 @@ const deleteItem = async (id,type)=>{
 
 try{
 
-setLoading(true);
+setDeletingId(id);
 
 await axios.delete(
 `https://grez-shop-lf6t.vercel.app/api/${type}/${id}`
@@ -123,7 +124,7 @@ catch{
 toast.error("Silinmədi");
 }
 finally{
-setLoading(false);
+setDeletingId(null);
 }
 
 };
@@ -141,7 +142,7 @@ item.title.toLowerCase().includes(search.toLowerCase())
 }
 
 if(sort === "price"){
-data.sort((a,b)=>a.price - b.price);
+data.sort((a,b)=>Number(a.price) - Number(b.price));
 }
 
 if(sort === "new"){
@@ -155,20 +156,24 @@ return data;
 
 
 const renderProducts = (data,type)=>(
+
 <div className="grid md:grid-cols-4 sm:grid-cols-2 grid-cols-1 gap-5">
 
 {filterAndSort(data).map(item=>(
+
 <div
 key={item._id}
 className="bg-white shadow-md rounded-xl overflow-hidden hover:shadow-xl transition p-3"
 >
 
 {item.photo && (
+
 <img
 src={`data:image/jpeg;base64,${item.photo}`}
 alt={item.title}
 className="h-40 w-full object-cover rounded"
 />
+
 )}
 
 <div className="mt-3">
@@ -186,18 +191,21 @@ onClick={()=>deleteItem(item._id,type)}
 className="mt-3 w-full bg-red-500 text-white py-2 rounded hover:bg-red-600 flex justify-center items-center gap-2"
 >
 
+{deletingId === item._id ? "Silinir..." : <>
 <FaTrash/>
-
 Sil
+</>}
 
 </button>
 
 </div>
 
 </div>
+
 ))}
 
 </div>
+
 );
 
 
@@ -215,9 +223,11 @@ Admin Panel
 
 
 {loading && (
+
 <div className="bg-blue-100 text-blue-700 p-3 rounded mb-4">
 Yüklənir...
 </div>
+
 )}
 
 
