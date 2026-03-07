@@ -131,29 +131,32 @@ setDeletingId(null);
 
 
 
-const filterAndSort = (arr) => {
+  const filterAndSort = (arr) => {
+    let data = [...arr];
 
-let data = [...arr];
+    if (search.trim() !== "") {
+      data = data.filter(item =>
+        item.title.toLowerCase().includes(search.toLowerCase())
+      );
+    }
 
-/* SEARCH */
-if (search.trim() !== "") {
-data = data.filter(item =>
-item.title.toLowerCase().includes(search.toLowerCase())
-);
-}
+    if (sort === "price") {
+      data.sort((a, b) => {
+        const valA = parseFloat(String(a.price).replace(/[^0-9.]/g, "")) || 0;
+        const valB = parseFloat(String(b.price).replace(/[^0-9.]/g, "")) || 0;
+        return valA - valB;
+      });
+    } else if (sort === "new") {
+      data.sort((a, b) => {
+        const dateA = new Date(a.createdAt || 0);
+        const dateB = new Date(b.createdAt || 0);
+        return dateB - dateA;
+      });
+    }
 
-/* STRING → NUMBER CONVERT */
-data = data.map(item => ({
-...item,
-priceNumber: Number(item.price)
-}));
+    return data;
+  };
 
-/* SORT */
-if (sort === "price") {
-
-data.sort((a,b) => a.priceNumber - b.priceNumber);
-
-}
 
 /* NEW PRODUCTS FIRST */
 
